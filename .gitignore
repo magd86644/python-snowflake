@@ -1,0 +1,16 @@
+
+snowflake_demo/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code settings
+.vscode/
+
+
+# Local files
+medical_records.csv
+.env
