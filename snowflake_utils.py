@@ -7,7 +7,7 @@ from snowflake.connector.pandas_tools import write_pandas
 # ---  Load settings ---
 def load_settings():
     load_dotenv()
-    settings = {
+    return {
         "user": os.getenv("SNOWFLAKE_USER"),
         "password": os.getenv("SNOWFLAKE_PASSWORD"),
         "account": os.getenv("SNOWFLAKE_ACCOUNT"),
@@ -17,7 +17,6 @@ def load_settings():
         "csv_file": os.getenv("CSV_FILE"),
         "table_name": os.getenv("TABLE_NAME")
     }
-    return settings
 
 # --- Connect to Snowflake ---
 def connect_to_snowflake(settings):
@@ -47,32 +46,12 @@ def create_table(cur, table_name):
     )
     """)
 
-# ---  Upload CSV DataFrame using write_pandas ---
+# --- Upload CSV DataFrame ---
 def upload_csv(df, conn, table_name):
     success, nchunks, nrows, _ = write_pandas(conn, df, table_name.upper())
-    print(f"Upload success: {success}, rows: {nrows}, chunks: {nchunks}")
+    return success, nchunks, nrows
 
-# ---  Query table to verify ---
-def query_table(cur, table_name, limit=10):
-    cur.execute(f"SELECT * FROM {table_name} LIMIT {limit}")
-    results = cur.fetchall()
-    print(f"First {limit} rows from {table_name}:")
-    for r in results:
-        print(r)
-
-def main():
-    settings = load_settings()
-    conn, cur = connect_to_snowflake(settings)
-    
-    df = pd.read_csv(settings["csv_file"])
-    # Snowflake expects uppercase table names
-    df.columns = [c.upper() for c in df.columns]
-    create_table(cur, settings["table_name"])
-    upload_csv(df, conn, settings["table_name"])
-    query_table(cur, settings["table_name"])
-    
-    cur.close()
-    conn.close()
-
-if __name__ == "__main__":
-    main()
+# --- Query table ---
+def query_table(cur, query):
+    cur.execute(query)
+    return cur.fetchall()
